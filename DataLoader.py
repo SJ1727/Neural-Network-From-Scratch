@@ -13,7 +13,7 @@ class FashionDataLoader:
             self.labels = np.frombuffer(lbpath.read(), dtype=np.uint8, offset=8)
 
         with gzip.open(images_path, 'rb') as imgpath:
-            self.images = np.frombuffer(imgpath.read(), dtype=np.uint8, offset=16).reshape(len(self.labels), 784)
+            self.images = np.frombuffer(imgpath.read(), dtype=np.uint8, offset=16).reshape(len(self.labels), 28, 28)
 
     def __getitem__(self, index):
         return self.images[index], self.labels[index]

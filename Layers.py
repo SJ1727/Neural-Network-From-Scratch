@@ -3,10 +3,9 @@ import numpy as np
 class LinearLayer:
     def __init__(self, in_features, out_features):
         self.weights = np.random.randn(in_features, out_features).transpose()
-        print(self.weights.shape)
         self.biases = np.random.randn(out_features)
-        self.weight_grad = None
-        self.bias_grad = None
+        self.weight_gradient = None
+        self.bias_gradient = None
         self.activations_gradient = None
         self.activations = None
 
@@ -16,20 +15,20 @@ class LinearLayer:
         self.activations = x
         return x
 
-    def backward(self, grad):
-        self.bias_grad = grad
+    def backward(self, gradient):
+        self.bias_gradient = gradient
 
-        self.weight_grad = np.ones(self.weights.shape)
-        self.weight_grad = self.weight_grad * grad[:, np.newaxis]
-        self.weight_grad = self.weight_grad * self.activations[:, np.newaxis]
+        self.weight_gradient = np.ones(self.weights.shape)
+        self.weight_gradient = self.weight_gradient * gradient[:, np.newaxis]
+        self.weight_gradient = self.weight_gradient * self.activations[:, np.newaxis]
 
-        self.activations_gradient = np.matmul(self.weights.transpose(), grad)
+        self.activations_gradient = np.matmul(self.weights.transpose(), gradient)
 
         return self.activations_gradient
 
 class Softmax:
     def __init__(self):
-        self.grad = None
+        self.gradient = None
         self.activations = None
 
     def forward(self, x):
@@ -38,10 +37,10 @@ class Softmax:
 
         return self.activations
 
-    def backward(self, grad):
-        self.grad = np.matmul(self.__jacobian(self.activations), grad)
+    def backward(self, gradient):
+        self.gradient = np.matmul(self.__jacobian(self.activations), gradient)
 
-        return self.grad
+        return self.gradient
 
     def __jacobian(self, x):
         return np.diag(x) - np.outer(x, x) 
@@ -51,7 +50,7 @@ class Softmax:
 
 class MSELoss:
     def __init__(self):
-        self.grad = None
+        self.gradient = None
         self.loss = 0
 
     def forward(self, x, expected):
@@ -62,13 +61,13 @@ class MSELoss:
         return self.loss
     
     def backward(self, x, expected):
-        self.grad = (2 / len(expected)) * (x - expected)
+        self.gradient = (2 / len(expected)) * (x - expected)
 
-        return self.grad
+        return self.gradient
 
 class CrossEntropyLoss:
     def __init__(self):
-        self.grad = None
+        self.gradient = None
         self.loss = 0
         self.activations = None
 
@@ -81,13 +80,13 @@ class CrossEntropyLoss:
         return self.loss
 
     def backward(self, expected):
-        self.grad = -np.divide(expected, self.activations)
+        self.gradient = -np.divide(expected, self.activations)
 
-        return self.grad
+        return self.gradient
 
 class Relu:
     def __init__(self):
-        self.grad = None
+        self.gradient = None
         self.activations = None
 
     def forward(self, x):
@@ -97,9 +96,9 @@ class Relu:
 
         return self.activations
     
-    def backward(self, grad):
+    def backward(self, gradient):
         relu_derivative_func = np.vectorize(lambda x: 0 if x < 0 else 1)
 
-        self.grad = relu_derivative_func(self.activations) * grad
+        self.gradient = relu_derivative_func(self.activations) * gradient
 
-        return self.grad
+        return self.gradient

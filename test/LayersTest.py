@@ -28,10 +28,12 @@ def test_cross_entropy_forward():
 
     crit = CrossEntropyLoss()
 
+    expected = 1.1394342831883648
+
     y_true = np.array([1.0, 0.0, 0.0, 1.0])
     y_pred = np.array([0.8, 0.5, 0.6, 0.4])
 
-    print(crit.forward(y_pred, y_true))
+    assert math.isclose(crit.forward(y_pred, y_true), expected)
 
 
 def test_softmax_backward():
@@ -94,11 +96,25 @@ def test_relu_forward():
     assert np.allclose(result1, expected1)
     assert np.allclose(result2, expected2)
 
+def test_relu_backward():
+    print("\n---Relu backward---\n")
+
+    activations1 = np.array([3, -7, -1, 3]) 
+    gradients1 = np.array([1, 2, -3, 4])
+    expected_gradients1 = np.array([1, 0, 0, 4])
+
+    relu = Relu()
+    relu.activations = activations1
+    new_gradients1 = relu.backward(gradients1)
+
+    assert np.allclose(new_gradients1, expected_gradients1)
+
 if __name__ == "__main__":
     test_cross_entropy_forward()
     test_softmax_forward()
     test_softmax_backward()
     test_relu_forward()
+    test_relu_backward()
     test_linear_layer()
 
     # s = Softmax()

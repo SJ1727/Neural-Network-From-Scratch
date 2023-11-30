@@ -33,26 +33,78 @@ def test_cross_entropy_forward():
 
     print(crit.forward(y_pred, y_true))
 
-def test_softmax_backward():
-    print("\nSoftmax Backward\n")
 
-    predicted1 = np.random.randn(5)
+def test_softmax_backward():
+    print("\n---Softmax Backward---\n")
+
+    x = np.random.randn(5)
     actual1 = np.array([0, 0, 0, 0, 1])
 
     crit = CrossEntropyLoss()
     softm = Softmax()
 
-    predicted1 = softm.forward(predicted1)
+    x = softm.forward(x)
+    crit.forward(softm.activations, actual1)
 
-    crit.backward(predicted1, actual1)
-    softm.backward(predicted1, crit.grad)
+    assert np.allclose(crit.activations, softm.activations)
+    assert np.allclose(x, softm.activations)
+
+    grad1 = crit.backward(actual1)
+    grad2 = softm.backward(grad1)
 
     # When used with cross entropy loss the gradient of the input values of the softmax function
     # are equal to the predicted result (the inputs after softmax is applied) minus the actual
     # values
-    assert np.allclose(softm.grad, predicted1 - actual1)
+    assert np.allclose(grad2, x - actual1)
+
+
+def test_linear_layer():
+    print("\n---Linear Layer---\n")
+    l1 = LinearLayer(10, 3)
+    softm = Softmax()
+    crit = CrossEntropyLoss()
+
+    data = np.random.randn(10)
+    expected = np.array([0, 0, 1])
+    x = data
+
+    x = l1.forward(x)
+    x = softm.forward(x)
+    x = crit.forward(x, expected)
+
+    g1 = crit.backward(expected)
+    g2 = softm.backward(g1)
+    g3 = l1.backward(g2)
+
+    # print(l1.weight_grad)
+
+def test_relu_forward():
+    print("\n---Relu forward---\n")
+    test1 = np.array([1, -1, 2, 0, -1])
+    expected1 = np.array([1, 0, 2, 0, 0])
+
+    test2 = np.array([[1, 2], [-1, 0]])
+    expected2 = np.array([[1, 2], [0, 0]])
+
+    relu = Relu()
+
+    result1 = relu.forward(test1)
+    result2 = relu.forward(test2)
+
+    assert np.allclose(result1, expected1)
+    assert np.allclose(result2, expected2)
 
 if __name__ == "__main__":
-    #test_softmax_forward()
+    test_cross_entropy_forward()
+    test_softmax_forward()
     test_softmax_backward()
-    #test_cross_entropy_forward()
+    test_relu_forward()
+    test_linear_layer()
+
+    # s = Softmax()
+    # t = np.array([1, 2, 3])
+    # g = np.array([1, 3, 4])
+
+    # j = s.jacobian(t)
+    # print(j)
+    # print(np.matmul(j, g))

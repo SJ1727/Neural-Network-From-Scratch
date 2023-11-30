@@ -22,7 +22,6 @@ def test_softmax_forward():
     assert np.array_equal(softm.forward(test1), result1)
     assert np.array_equal(softm.forward(test2), result2)
 
-
 def test_cross_entropy_forward():
     print("\n---Cross Entropy Forward---\n")
 
@@ -34,7 +33,6 @@ def test_cross_entropy_forward():
     y_pred = np.array([0.8, 0.5, 0.6, 0.4])
 
     assert math.isclose(crit.forward(y_pred, y_true), expected)
-
 
 def test_softmax_backward():
     print("\n---Softmax Backward---\n")
@@ -58,7 +56,6 @@ def test_softmax_backward():
     # are equal to the predicted result (the inputs after softmax is applied) minus the actual
     # values
     assert np.allclose(grad2, x - actual1)
-
 
 def test_linear_layer():
     print("\n---Linear Layer---\n")

@@ -106,18 +106,69 @@ def test_relu_backward():
 
     assert np.allclose(new_gradients1, expected_gradients1)
 
+def test_dimentionality():
+    l1 = LinearLayer(784, 16)
+    r1 = Relu()
+    l2 = LinearLayer(16, 16)
+    r2 = Relu()
+    l3 = LinearLayer(16, 16)
+    sm = Softmax()
+    r3 = Relu()
+    l4 = LinearLayer(16, 10)
+
+    l1.kaiming_init()
+    l2.kaiming_init()
+    l3.kaiming_init()
+    l4.kaiming_init()
+
+    crit = CrossEntropyLoss()
+
+    test = np.random.uniform(-1, 1, (784))
+    test_expected = np.zeros(10)
+    test_expected[2] = 1
+
+    x = np.copy(test)
+
+    x = l1.forward(x)
+    display_statistic(x, "Layer1")
+    x = r1.forward(x)
+    x = l2.forward(x)
+    display_statistic(x, "Layer2")
+    x = r2.forward(x)
+    x = l3.forward(x)
+    display_statistic(x, "Layer3")
+    x = r3.forward(x)
+    x = l4.forward(x)
+    display_statistic(x, "Layer4")
+    x = sm.forward(x)
+    print(x)
+    loss = crit.forward(x, test_expected)
+
+    print(f"Loss: {loss}")
+
+    crit.backward(test_expected)
+    sm.backward(crit.gradient)
+    l4.backward(sm.gradient)
+    r3.backward(l4.activations_gradient)
+    l3.backward(r3.gradient)
+    r2.backward(l3.activations_gradient)
+    l2.backward(r2.gradient)
+    r1.backward(l2.activations_gradient)
+    l1.backward(r1.gradient)
+
+def display_statistic(arr, title):
+    print(f"\n---{title}---\n")
+    print(f"Mean: {np.mean(arr)}")
+    print(f"Standard deviation: {np.std(arr)}")
+
+
+
 if __name__ == "__main__":
-    test_cross_entropy_forward()
-    test_softmax_forward()
-    test_softmax_backward()
-    test_relu_forward()
-    test_relu_backward()
-    test_linear_layer()
+    # test_cross_entropy_forward()
+    # test_softmax_forward()
+    # test_softmax_backward()
+    # test_relu_forward()
+    # test_relu_backward()
+    # test_linear_layer()
 
-    # s = Softmax()
-    # t = np.array([1, 2, 3])
-    # g = np.array([1, 3, 4])
-
-    # j = s.jacobian(t)
-    # print(j)
-    # print(np.matmul(j, g))
+    test_dimentionality()

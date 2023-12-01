@@ -2,8 +2,10 @@ import numpy as np
 
 class LinearLayer:
     def __init__(self, in_features, out_features):
-        self.weights = np.random.randn(in_features, out_features).transpose()
-        self.biases = np.random.randn(out_features)
+        self.in_features = in_features
+        self.out_features = out_features
+        self.weights = np.random.uniform(-1, 1, (in_features, out_features)).transpose() * np.sqrt(2 / in_features)
+        self.biases = np.random.uniform(-1, 1, (out_features))
         self.weight_gradient = None
         self.bias_gradient = None
         self.activations_gradient = None
@@ -25,6 +27,13 @@ class LinearLayer:
         self.activations_gradient = np.matmul(self.weights.transpose(), gradient)
 
         return self.activations_gradient
+    
+    # Initializes weights using kaiming algoritm
+    # Only really effective when network consists of relu layers
+    def kaiming_init(self):
+        self.weights = np.random.uniform(-1, 1, (self.in_features, self.out_features)).transpose() * np.sqrt(2 / self.in_features)
+        self.biases = np.random.uniform(-1, 1, (self.out_features)) * np.sqrt(2 / self.in_features)
+
 
 class Softmax:
     def __init__(self):
@@ -44,9 +53,6 @@ class Softmax:
 
     def __jacobian(self, x):
         return np.diag(x) - np.outer(x, x) 
-    
-    def jacobian(self, x):
-        return self.__jacobian(x)
 
 class MSELoss:
     def __init__(self):

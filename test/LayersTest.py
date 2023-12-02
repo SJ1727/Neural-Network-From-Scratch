@@ -127,7 +127,7 @@ def test_example_network():
 
     test = np.random.uniform(-1, 1, (784))
     test_expected = np.zeros(10)
-    test_expected[2] = 1
+    test_expected[0] = 1
 
     for i in range(30):
         x = np.copy(test)

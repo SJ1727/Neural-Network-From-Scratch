@@ -18,7 +18,7 @@ human_labels = {
 }
 
 def test_image_label_pairing():
-    dataloader = FashionDataLoader("data")
+    dataloader = FashionDataLoader("data", (28, 28))
 
     for i in range(len(dataloader)):
         image, label = dataloader[i]

@@ -3,7 +3,7 @@ import os
 import gzip
 
 class FashionDataLoader:
-    def __init__(self, dir_path):
+    def __init__(self, dir_path, shape):
 
         labels_path = os.path.join(dir_path, "train-labels-idx1-ubyte.gz")
 
@@ -13,7 +13,7 @@ class FashionDataLoader:
             self.labels = np.frombuffer(lbpath.read(), dtype=np.uint8, offset=8)
 
         with gzip.open(images_path, 'rb') as imgpath:
-            self.images = np.frombuffer(imgpath.read(), dtype=np.uint8, offset=16).reshape(len(self.labels), 28, 28)
+            self.images = np.frombuffer(imgpath.read(), dtype=np.uint8, offset=16).reshape(len(self.labels), *shape)
 
     def __getitem__(self, index):
         return self.images[index], self.labels[index]

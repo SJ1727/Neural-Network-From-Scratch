@@ -28,6 +28,12 @@ class LinearLayer:
 
         return self.activations_gradient
     
+    # Using stohcastic gradient decent
+    # TODO: Add option for other types of optimization (Adam, RSMprop, etc)
+    def optimize(self, lr):
+        self.biases = self.biases - lr * self.bias_gradient
+        self.weights = self.weights - lr * self.weight_gradient
+    
     # Initializes weights using kaiming algoritm
     # Only really effective when network consists of relu layers
     def kaiming_init(self):

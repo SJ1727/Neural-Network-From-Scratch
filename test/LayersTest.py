@@ -106,7 +106,9 @@ def test_relu_backward():
 
     assert np.allclose(new_gradients1, expected_gradients1)
 
-def test_dimentionality():
+def test_example_network():
+    lr = 0.1
+
     l1 = LinearLayer(784, 16)
     r1 = Relu()
     l2 = LinearLayer(16, 16)
@@ -127,34 +129,43 @@ def test_dimentionality():
     test_expected = np.zeros(10)
     test_expected[2] = 1
 
-    x = np.copy(test)
+    for i in range(30):
+        x = np.copy(test)
 
-    x = l1.forward(x)
-    display_statistic(x, "Layer1")
-    x = r1.forward(x)
-    x = l2.forward(x)
-    display_statistic(x, "Layer2")
-    x = r2.forward(x)
-    x = l3.forward(x)
-    display_statistic(x, "Layer3")
-    x = r3.forward(x)
-    x = l4.forward(x)
-    display_statistic(x, "Layer4")
-    x = sm.forward(x)
-    print(x)
-    loss = crit.forward(x, test_expected)
+        x = l1.forward(x)
+        #display_statistic(x, "Layer1")
+        x = r1.forward(x)
+        x = l2.forward(x)
+        #display_statistic(x, "Layer2")
+        x = r2.forward(x)
+        x = l3.forward(x)
+        #display_statistic(x, "Layer3")
+        x = r3.forward(x)
+        x = l4.forward(x)
+        #display_statistic(x, "Layer4")
+        x = sm.forward(x)
+        loss = crit.forward(x, test_expected)
 
-    print(f"Loss: {loss}")
+        if i % 5 == 0:
+            print(f"Epoch {i}:")
+            print(f"Loss: {loss}")
+            print(f"Expected: {test_expected}")
+            print(f"Prediction: {x}")
 
-    crit.backward(test_expected)
-    sm.backward(crit.gradient)
-    l4.backward(sm.gradient)
-    r3.backward(l4.activations_gradient)
-    l3.backward(r3.gradient)
-    r2.backward(l3.activations_gradient)
-    l2.backward(r2.gradient)
-    r1.backward(l2.activations_gradient)
-    l1.backward(r1.gradient)
+        crit.backward(test_expected)
+        sm.backward(crit.gradient)
+        l4.backward(sm.gradient)
+        r3.backward(l4.activations_gradient)
+        l3.backward(r3.gradient)
+        r2.backward(l3.activations_gradient)
+        l2.backward(r2.gradient)
+        r1.backward(l2.activations_gradient)
+        l1.backward(r1.gradient)
+
+        l1.optimize(lr)
+        l2.optimize(lr)
+        l3.optimize(lr)
+        l4.optimize(lr)
 
 def display_statistic(arr, title):
     print(f"\n---{title}---\n")
@@ -170,4 +181,4 @@ if __name__ == "__main__":
     test_relu_forward()
     test_relu_backward()
     test_linear_layer()
-    test_dimentionality()
+    test_example_network()

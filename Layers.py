@@ -1,15 +1,30 @@
 import numpy as np
 
-class LinearLayer:
+# Base class for network layers
+class Layer:
+    LAYER_NAME = "Layer"
+
+    def __init__(self):
+        self.activations = None
+        self.activations_gradient = None
+
+    def activation_statistic(self):
+        print(f"\n---{self.__class__.LAYER_NAME}---\n")
+        print(f"Mean: {np.mean(self.activations)}")
+        print(f"Standard deviation: {np.std(self.activations)}")
+
+class LinearLayer(Layer):
+    LAYER_NAME = "Linear Layer"
+
     def __init__(self, in_features, out_features):
+        super().__init__()
+
         self.in_features = in_features
         self.out_features = out_features
         self.weights = np.random.uniform(-1, 1, (in_features, out_features)).transpose()
         self.biases = np.random.uniform(-1, 1, (out_features))
         self.weight_gradient = None
         self.bias_gradient = None
-        self.activations_gradient = None
-        self.activations = None
 
     def forward(self, x):
         x = np.matmul(self.weights, x)
@@ -41,10 +56,11 @@ class LinearLayer:
         self.biases = np.random.uniform(-1, 1, (self.out_features)) * np.sqrt(2 / self.in_features)
 
 
-class Softmax:
+class Softmax(Layer):
+    LAYER_NAME = "Softmax"
+
     def __init__(self):
-        self.gradient = None
-        self.activations = None
+        super().__init__()
 
     def forward(self, x):
         exp_matrix = np.exp(x)
@@ -53,16 +69,18 @@ class Softmax:
         return self.activations
 
     def backward(self, gradient):
-        self.gradient = np.matmul(self.__jacobian(self.activations), gradient)
+        self.activations_gradient = np.matmul(self.__jacobian(self.activations), gradient)
 
-        return self.gradient
+        return self.activations_gradient
 
     def __jacobian(self, x):
         return np.diag(x) - np.outer(x, x) 
 
-class MSELoss:
+class MSELoss(Layer):
+    LAYER_NAME = "MSE Loss"
+
     def __init__(self):
-        self.gradient = None
+        super().__init__()
         self.loss = 0
 
     def forward(self, x, expected):
@@ -73,15 +91,16 @@ class MSELoss:
         return self.loss
     
     def backward(self, x, expected):
-        self.gradient = (2 / len(expected)) * (x - expected)
+        self.activations_gradient = (2 / len(expected)) * (x - expected)
 
-        return self.gradient
+        return self.activations_gradient
 
-class CrossEntropyLoss:
+class CrossEntropyLoss(Layer):
+    LAYER_NAME = "Cross Entropy Loss"
+
     def __init__(self):
-        self.gradient = None
+        super().__init__()
         self.loss = 0
-        self.activations = None
 
     def forward(self, x, expected):
         self.activations = np.copy(x)
@@ -92,14 +111,15 @@ class CrossEntropyLoss:
         return self.loss
 
     def backward(self, expected):
-        self.gradient = -np.divide(expected, self.activations)
+        self.activations_gradient = -np.divide(expected, self.activations)
 
-        return self.gradient
+        return self.activations_gradient
 
-class Relu:
+class Relu(Layer):
+    LAYER_NAME = "Relu"
+
     def __init__(self):
-        self.gradient = None
-        self.activations = None
+        super().__init__()
 
     def forward(self, x):
         relu_func = np.vectorize(lambda x: 0 if x < 0 else x)
@@ -111,6 +131,6 @@ class Relu:
     def backward(self, gradient):
         relu_derivative_func = np.vectorize(lambda x: 0 if x < 0 else 1)
 
-        self.gradient = relu_derivative_func(self.activations) * gradient
+        self.activations_gradient = relu_derivative_func(self.activations) * gradient
 
-        return self.gradient
+        return self.activations_gradient

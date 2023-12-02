@@ -155,14 +155,14 @@ def test_example_network():
 
         # Backward pass
         crit.backward(test_expected)
-        sm.backward(crit.gradient)
-        l4.backward(sm.gradient)
+        sm.backward(crit.activations_gradient)
+        l4.backward(sm.activations_gradient)
         r3.backward(l4.activations_gradient)
-        l3.backward(r3.gradient)
+        l3.backward(r3.activations_gradient)
         r2.backward(l3.activations_gradient)
-        l2.backward(r2.gradient)
+        l2.backward(r2.activations_gradient)
         r1.backward(l2.activations_gradient)
-        l1.backward(r1.gradient)
+        l1.backward(r1.activations_gradient)
 
         # Update weights and biases
         l1.optimize(lr)

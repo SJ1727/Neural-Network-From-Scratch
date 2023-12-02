@@ -108,7 +108,9 @@ def test_relu_backward():
 
 def test_example_network():
     lr = 0.1
+    epochs = 30
 
+    # Defining layers
     l1 = LinearLayer(784, 16)
     r1 = Relu()
     l2 = LinearLayer(16, 16)
@@ -118,6 +120,7 @@ def test_example_network():
     r3 = Relu()
     l4 = LinearLayer(16, 10)
 
+    # Initilising linear layeer susnign kaiming initionlisation
     l1.kaiming_init()
     l2.kaiming_init()
     l3.kaiming_init()
@@ -125,33 +128,32 @@ def test_example_network():
 
     crit = CrossEntropyLoss()
 
+    # Create random data
     test = np.random.uniform(-1, 1, (784))
     test_expected = np.zeros(10)
     test_expected[0] = 1
 
-    for i in range(30):
+    for epoch in range(epochs):
         x = np.copy(test)
 
+        # Forward pass
         x = l1.forward(x)
-        #display_statistic(x, "Layer1")
         x = r1.forward(x)
         x = l2.forward(x)
-        #display_statistic(x, "Layer2")
         x = r2.forward(x)
         x = l3.forward(x)
-        #display_statistic(x, "Layer3")
         x = r3.forward(x)
         x = l4.forward(x)
-        #display_statistic(x, "Layer4")
         x = sm.forward(x)
         loss = crit.forward(x, test_expected)
 
-        if i % 5 == 0:
-            print(f"Epoch {i}:")
+        if epoch % 5 == 0:
+            print(f"Epoch {epoch}:")
             print(f"Loss: {loss}")
             print(f"Expected: {test_expected}")
             print(f"Prediction: {x}")
 
+        # Backward pass
         crit.backward(test_expected)
         sm.backward(crit.gradient)
         l4.backward(sm.gradient)
@@ -162,12 +164,14 @@ def test_example_network():
         r1.backward(l2.activations_gradient)
         l1.backward(r1.gradient)
 
+        # Update weights and biases
         l1.optimize(lr)
         l2.optimize(lr)
         l3.optimize(lr)
         l4.optimize(lr)
 
 def display_statistic(arr, title):
+    # Displays mean and standard deviation of array
     print(f"\n---{title}---\n")
     print(f"Mean: {np.mean(arr)}")
     print(f"Standard deviation: {np.std(arr)}")

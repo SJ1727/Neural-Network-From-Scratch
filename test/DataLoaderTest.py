@@ -17,6 +17,7 @@ human_labels = {
     9 : "Ankle boot",
 }
 
+# Displays images using matplotlib and prits label in console
 def test_image_label_pairing():
     dataloader = FashionDataLoader("data", (28, 28))
 

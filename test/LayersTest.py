@@ -164,11 +164,10 @@ def display_statistic(arr, title):
 
 
 if __name__ == "__main__":
-    # test_cross_entropy_forward()
-    # test_softmax_forward()
-    # test_softmax_backward()
-    # test_relu_forward()
-    # test_relu_backward()
-    # test_linear_layer()
-
+    test_cross_entropy_forward()
+    test_softmax_forward()
+    test_softmax_backward()
+    test_relu_forward()
+    test_relu_backward()
+    test_linear_layer()
     test_dimentionality()

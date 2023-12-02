@@ -4,7 +4,7 @@ class LinearLayer:
     def __init__(self, in_features, out_features):
         self.in_features = in_features
         self.out_features = out_features
-        self.weights = np.random.uniform(-1, 1, (in_features, out_features)).transpose() * np.sqrt(2 / in_features)
+        self.weights = np.random.uniform(-1, 1, (in_features, out_features)).transpose()
         self.biases = np.random.uniform(-1, 1, (out_features))
         self.weight_gradient = None
         self.bias_gradient = None

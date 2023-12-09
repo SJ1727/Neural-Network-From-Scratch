@@ -1,7 +1,7 @@
 import sys
 sys.path.append(r"C:\Users\samue\projects\Neural-Network-From-Scratch")
 
-from DataLoader import FashionDataLoader
+from dataLoader import FashionDataLoader
 import matplotlib.pyplot as plt
 
 human_labels = {

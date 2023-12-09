@@ -7,7 +7,7 @@ class Layer:
         self.activations = None
         self.activations_gradient = None
 
-    def activation_statistic(self):
+    def print_activation_statistics(self):
         """
         Displays the mean and standard deviation of the activations of the layer
         """
@@ -18,7 +18,7 @@ class Layer:
 class LinearLayer(Layer):
     LAYER_NAME = "Linear Layer"
 
-    def __init__(self, in_features, out_features):
+    def __init__(self, in_features, out_features, batch_size):
         """
         Initilise Linear layer
 
@@ -30,6 +30,7 @@ class LinearLayer(Layer):
 
         self.in_features = in_features
         self.out_features = out_features
+        self.batch_size = batch_size
         self.weights = np.random.uniform(-1, 1, (in_features, out_features)).transpose()
         self.biases = np.random.uniform(-1, 1, (out_features))
         self.weight_gradient = None
@@ -45,8 +46,15 @@ class LinearLayer(Layer):
         Returns:
             np.array: activations of this layer
         """
+        
+        # TODO: FIX CUZ THIS HAS GONE TO SHIT
+        
         self.activations = x
-        self.activations = np.matmul(self.weights, self.activations)
+        # self.activations = np.einsum("ijk,lk->ijl", self.activations * self.weights)
+        # print(np.matmul(self.weights, self.activations[0]))
+        # print(np.matmul(self.weights, self.activations.transpose()).transpose())
+        self.activations = np.matmul(self.weights, self.activations.transpose()).transpose()
+        # self.activations = self.weights * self.activations[np.newaxis, :]
         self.activations = self.activations + self.biases
 
         return self.activations
@@ -61,13 +69,16 @@ class LinearLayer(Layer):
         Returns:
             np.array: gradients of the activations for this layer
         """
+        
+        # TODO: FIX CUZ THIS HAS GONE TO SHIT
+        
         self.bias_gradient = gradient
 
-        self.weight_gradient = np.ones(self.weights.shape)
-        self.weight_gradient = self.weight_gradient * gradient[:, np.newaxis]
-        self.weight_gradient = self.weight_gradient * self.activations[:, np.newaxis]
+        self.weight_gradient = np.ones((gradient.shape[0], *self.weights.shape))
+        self.weight_gradient = np.array([self.weight_gradient[i] * gradient[i][:, np.newaxis] for i in range(gradient.shape[0])])
+        self.weight_gradient = np.array([self.weight_gradient[i] * self.activations[i][:, np.newaxis] for i in range(gradient.shape[0])])
 
-        self.activations_gradient = np.matmul(self.weights.transpose(), gradient)
+        self.activations_gradient = np.array([np.matmul(self.weights.transpose(), single_gradient) for single_gradient in gradient])
 
         return self.activations_gradient
     
@@ -79,8 +90,9 @@ class LinearLayer(Layer):
         Args:
             lr (float): Learning rate
         """
-        self.biases = self.biases - lr * self.bias_gradient
-        self.weights = self.weights - lr * self.weight_gradient
+        
+        self.biases = self.biases - lr * np.sum(self.bias_gradient, axis=0)
+        self.weights = self.weights - lr * np.sum(self.weight_gradient, axis=0)
 
     def kaiming_init(self):
         """
@@ -88,6 +100,25 @@ class LinearLayer(Layer):
         """
         self.weights = np.random.uniform(-1, 1, (self.in_features, self.out_features)).transpose() * np.sqrt(2 / self.in_features)
         self.biases = np.random.uniform(-1, 1, (self.out_features)) * np.sqrt(2 / self.in_features)
+        
+    def print_weight_statistics(self):
+        """
+        Prints the shape, mean, and standard deviation of the layer weights
+        """
+        print(f"---{self.__class__.LAYER_NAME}---")
+        print(f"Weights shape: {self.weights.shape}")
+        print(f"Weights mean: {np.mean(self.weights)}")
+        print(f"Weights standard deviation: {np.std(self.weights)}")
+
+
+    def print_bias_statistics(self):
+        """
+        Prints the shape, mean, and standard deviation of the layer baises
+        """
+        print(f"---{self.__class__.LAYER_NAME}---")
+        print(f"Biases shape: {self.biases.shape}")
+        print(f"Biases mean: {np.mean(self.biases)}")
+        print(f"Biases standard deviation: {np.std(self.biases)}")
 
 
 class Softmax(Layer):
@@ -109,8 +140,8 @@ class Softmax(Layer):
         Returns:
             np.array: activations of this layer
         """
-        exp_matrix = np.exp(x)
-        self.activations = exp_matrix / np.sum(exp_matrix)
+        exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
+        self.activations = exp_x / np.sum(exp_x, axis=-1, keepdims=True)
 
         return self.activations
 
@@ -124,9 +155,13 @@ class Softmax(Layer):
         Returns:
             np.array: gradients of activations for this layer
         """
-        self.activations_gradient = np.matmul(self.__jacobian(self.activations), gradient)
+
+        self.activations_gradient = np.einsum('ijk,ik->ij', self.__jacobians(self.activations), gradient)
 
         return self.activations_gradient
+
+    def __jacobians(self, x):
+        return np.array([self.__jacobian(arr) for arr in x])
 
     def __jacobian(self, x):
         """
@@ -230,7 +265,7 @@ class CrossEntropyLoss(Layer):
         Initilisation for Cross entropy loss
         """
         super().__init__()
-        self.loss = 0
+        self.loss = None
 
     def forward(self, x, expected):
         """
@@ -246,7 +281,8 @@ class CrossEntropyLoss(Layer):
         self.activations = np.copy(x)
 
         log_x = np.log(x)
-        self.loss = -np.sum(log_x * expected)
+
+        self.loss = -np.sum(log_x * expected, axis=-1)
 
         return self.loss
 
@@ -260,6 +296,6 @@ class CrossEntropyLoss(Layer):
         Returns:
             np.array: gradients of activations for thus layer
         """
-        self.activations_gradient = -np.divide(expected, self.activations)
+        self.activations_gradient = -expected / self.activations
 
         return self.activations_gradient
